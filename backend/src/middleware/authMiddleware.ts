@@ -64,6 +64,6 @@ export const roleMiddleware = (allowedRoles: string[]) => {
         return;
       }
   
-      next(); // ✅ Correct way to pass execution to next middleware
+      next(); //Correct way to pass execution to next middleware
     };
   };
