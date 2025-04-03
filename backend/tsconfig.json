@@ -5,7 +5,8 @@
         "outDir": "dist", //Compiles TypeScript files into the dist folder.
         "sourceMap": true, //	Generates .map files for debugging.
         "noImplicitAny": true, //Forces explicit typing, preventing any type usage.
-        "types": ["node"]
+        "types": ["node"],
+        "typeRoots": ["./node_modules/@types", "./src/types"]
     },
     "include": ["src/**/*"], //Ensures all .ts files inside src are compiled.
     "exclude": ["dist", "node_modules"] //prevents unnecessary files from being compiled.
