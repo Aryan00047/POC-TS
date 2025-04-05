@@ -10,12 +10,7 @@ interface ILogin {
 
 function Login() {
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState<ILogin>({
-    email: "",
-    password: "",
-  });
-  
+  const [formData, setFormData] = useState<ILogin>({ email: "", password: "" });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [apiError, setApiError] = useState<string>("");
@@ -24,10 +19,7 @@ function Login() {
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[_@#$]).{7,}$/;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -35,6 +27,7 @@ function Login() {
     let isValid = true;
     let newErrors: { email?: string; password?: string } = {};
 
+    // Validate email
     if (!formData.email.trim()) {
       newErrors.email = "Email is required.";
       isValid = false;
@@ -43,6 +36,7 @@ function Login() {
       isValid = false;
     }
 
+    // Validate password
     if (!formData.password.trim()) {
       newErrors.password = "Password is required.";
       isValid = false;
@@ -62,15 +56,29 @@ function Login() {
       const response = await Api({
         url: "http://localhost:5000/api/auth/login",
         method: "post",
-        formData, 
+        formData,
       });
 
       if ("error" in response) {
         setApiError(response.message);
       } else {
         console.log("Login Success:", response.data);
-        localStorage.setItem("token", response.data.token); // Store token if needed
-        navigate("/dashboard"); // Redirect after successful login
+
+        // Store token and role in localStorage
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("userRole", response.data.userRole);
+        localStorage.setItem("userId", response.data.userId);
+
+        // Redirect based on role
+        if (response.data.userRole === "CANDIDATE") {
+          navigate("/candidateDashboard");
+        } else if (response.data.userRole === "HR") {
+          navigate("/hrDashboard");
+        } else if (response.data.userRole === "ADMIN") {
+          navigate("/adminDashboard");
+        } else {
+          setApiError("Invalid role detected. Contact support.");
+        }
       }
     } catch (error) {
       console.error("API Error:", error);
@@ -84,24 +92,12 @@ function Login() {
     <>
       <form onSubmit={handleLogin}>
         <label>Email:</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="Enter your Email"
-        />
+        <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Enter your Email" />
         {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
         <br />
 
         <label>Password:</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Password"
-        />
+        <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password" />
         {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
         <br />
 
