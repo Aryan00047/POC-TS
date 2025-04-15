@@ -27,7 +27,7 @@ const ViewProfile: React.FC = () => {
       <p>University: {profileData.university || "N/A"}</p>
       <p>Skills: {Array.isArray(profileData.skills) ? profileData.skills.join(", ") : "N/A"}</p> 
       <p>Marks: { profileData.marks || "N/A"}</p>
-      <p>Working: {profileData.working || "N/A"}</p>
+      <p>Working: {profileData.working ? 'Yes' : (profileData.working === false ? 'No' : 'N/A')}</p>
       <p>Work Experience: {profileData.workExperience || "N/A"}</p>
       <p>Company: {profileData.company || "N/A"}</p>
       <Button

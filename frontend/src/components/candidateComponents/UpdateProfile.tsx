@@ -54,7 +54,9 @@ const UpdateProfile: React.FC = () => {
         const profile = data.profile;
         setExistingProfile(profile);
         setFormData({
-          dob: profile.dob || "",
+          dob: profile.dob
+          ? moment(profile.dob, "DD-MM-YYYY").format("YYYY-MM-DD") // format for date input
+          : "", // If dob is empty, leave it as an empty string
           marks: profile.marks || "",
           university: profile.university || "",
           skills: profile.skills || "",
@@ -91,10 +93,10 @@ const UpdateProfile: React.FC = () => {
     let hasChanges = false;
   
     Object.entries(formData).forEach(([key, value]) => {
-      // Convert and compare DOB safely
+      // Check for date format change
       if (key === "dob" && value) {
         const formatted = moment(value, "YYYY-MM-DD").format("DD-MM-YYYY");
-        const existingFormatted = moment(existingProfile.dob, "YYYY-MM-DD").format("DD-MM-YYYY");
+        const existingFormatted = moment(existingProfile.dob, "DD-MM-YYYY").format("DD-MM-YYYY");
   
         if (formatted !== existingFormatted) {
           changedData[key] = formatted;
@@ -106,34 +108,43 @@ const UpdateProfile: React.FC = () => {
       }
     });
   
+    // Check if a new resume was uploaded
     if (resume) {
+      changedData.resume = resume;
       hasChanges = true;
     }
   
+    // If no changes, show a message
     if (!hasChanges) {
       setMessage("No changes detected.");
       return;
     }
   
-    dispatch(updateProfileRequest({ data: changedData, resume }));
-
-    setMessage("Updating profile...");
-  };
-  
+    // Ensure changedData is an object before dispatching
+    if (changedData && Object.keys(changedData).length > 0) {
+      // Dispatch the update request with separate arguments (changedData, resume)
+      dispatch(updateProfileRequest(changedData, resume));
+      setMessage("Updating profile...");
+    } else {
+      setMessage("Invalid profile data.");
+    }
+  };  
 
   return (
     <div>
       <h2>Update Profile</h2>
       {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
+        <label>DOB: </label>
         <input
           type="date"
           name="dob"
-          value={formData.dob}
+          value={formData.dob || existingProfile.dob || ""}
           max={minDateString}
           onChange={handleChange}
         />
         <br />
+        <label> Marks: </label>
         <input
           name="marks"
           type="number"
@@ -142,6 +153,7 @@ const UpdateProfile: React.FC = () => {
           placeholder="Marks"
         />
         <br />
+        <label>University: </label>
         <input
           name="university"
           type="text"
@@ -150,6 +162,7 @@ const UpdateProfile: React.FC = () => {
           placeholder="University"
         />
         <br />
+        <label> Skills:</label>
         <input
           name="skills"
           type="text"
@@ -158,6 +171,7 @@ const UpdateProfile: React.FC = () => {
           placeholder="Skills"
         />
         <br />
+        <label> Company: </label>
         <input
           name="company"
           type="text"
@@ -166,6 +180,7 @@ const UpdateProfile: React.FC = () => {
           placeholder="Company"
         />
         <br />
+        <label> Designation: </label>
         <input
           name="designation"
           type="text"
@@ -174,6 +189,7 @@ const UpdateProfile: React.FC = () => {
           placeholder="Designation"
         />
         <br />
+        <label> Work Experience: </label>
         <input
           name="workExperience"
           type="text"
@@ -183,6 +199,7 @@ const UpdateProfile: React.FC = () => {
         />
         <br />
         <label>
+          <label>Working: </label>
           <input
             name="working"
             type="checkbox"
@@ -200,7 +217,7 @@ const UpdateProfile: React.FC = () => {
           accept=".pdf,.docx"
         />
         <br /><br />
-        <Button type="submit" onClick={() => {}} label="Update" />
+        <Button type="submit" onClick = {()=>{}} label="Update" />
       </form>
     </div>
   );

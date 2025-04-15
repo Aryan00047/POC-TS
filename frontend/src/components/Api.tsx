@@ -1,8 +1,8 @@
-import axios, {type AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { type AxiosRequestConfig, AxiosResponse } from "axios";
 
 interface ApiProps {
   url?: string;
-  formData?: Record<string, any>;
+  formData?: Record<string, any> | FormData;
   method?: "get" | "post" | "put" | "delete" | "patch";
   token?: string;
   responseType?: "json" | "blob" | "text" | "arraybuffer";
@@ -18,12 +18,14 @@ async function Api({
   headers = {},
 }: ApiProps): Promise<AxiosResponse | { error: boolean; message: string; status?: number }> {
   try {
+    const isFormData = typeof FormData !== "undefined" && formData instanceof FormData;
+
     const config: AxiosRequestConfig = {
       method,
       url,
       headers: {
-        "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...headers,
       },
       responseType,

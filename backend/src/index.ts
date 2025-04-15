@@ -20,7 +20,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/candidate", candidateRoutes);
 app.use("/api/hr", hrRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/dashboard", dashboradRoutes);
 
 const PORT = process.env.PORT || 5000;
 

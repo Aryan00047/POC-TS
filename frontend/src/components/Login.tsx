@@ -71,11 +71,17 @@ function Login() {
 
         // Redirect based on role
         if (response.data.userRole === "CANDIDATE") {
-          navigate("/candidateDashboard");
+          setTimeout(() => {
+            navigate("/candidateDashboard");
+          },3000)
         } else if (response.data.userRole === "HR") {
-          navigate("/hrDashboard");
+          setTimeout(()=>{
+            navigate("/hrDashboard");
+          },3000)
         } else if (response.data.userRole === "ADMIN") {
-          navigate("/adminDashboard");
+          setTimeout(()=>{
+            navigate("/adminDashboard");
+          },3000)
         } else {
           setApiError("Invalid role detected. Contact support.");
         }
@@ -83,8 +89,7 @@ function Login() {
     } catch (error) {
       console.error("API Error:", error);
       setApiError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+      setLoading(false)
     }
   };
 
@@ -103,8 +108,9 @@ function Login() {
 
         {apiError && <p style={{ color: "red" }}>{apiError}</p>}
 
-        <Button type="submit" onClick={() => {}} label={loading ? "Logging in..." : "Login"} />
+        <Button type="submit" onClick={() => {}} label="Login" />
       </form>
+      {loading && <p>Successful Login!, redirecting to the dashboard in 3 seconds...</p>}
       <br />
       <Button type="button" onClick={() => navigate("/")} label="HomePage" />
       <Button type="button" onClick={() => navigate("/register")} label="Register" />

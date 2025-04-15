@@ -7,18 +7,19 @@ const sagaMiddleware = createSagaMiddleware();
 
 const store = configureStore({
   reducer: {
-    profile: profileReducer, // ✅ Add profile slice
+    profile: profileReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ thunk: false,
-        serializableCheck: {
-            ignoredActions: ["profile/updateProfileRequest"],
-            ignoredPaths: ["payload.resume"],},
-    }).concat(sagaMiddleware), // ✅ Use Saga instead of Thunk
-  
+    getDefaultMiddleware({
+      thunk: false,
+      serializableCheck: {
+        ignoredActions: ["profile/registerProfileRequest", "profile/updateProfileRequest"],
+        ignoredPaths: ["meta.resume"], // Corrected here
+      },
+    }).concat(sagaMiddleware),
 });
 
-sagaMiddleware.run(rootSaga); // ✅ Run Sagas
+sagaMiddleware.run(rootSaga);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

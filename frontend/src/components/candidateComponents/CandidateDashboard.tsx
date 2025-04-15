@@ -13,13 +13,14 @@ const CandidateDashboard: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log("Profile Data:", data); // ✅ Debugging Redux state
+    console.log("Profile Data:", data); // Debugging Redux state
     console.log("Loading State:", loading);
     console.log("Error:", error);
 
     if (!loading && !data) {
       navigate("registerProfile");
     }
+    
   }, [loading, data, error, navigate]);
 
   return (

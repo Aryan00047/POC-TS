@@ -18,6 +18,7 @@ const profileSlice = createSlice({
   reducers: {
     fetchProfileRequest: (state) => {
       state.loading = true;
+      state.error = null;
     },
     fetchProfileSuccess: (state, action: PayloadAction<Record<string, any>>) => {
       state.loading = false;
@@ -34,11 +35,11 @@ const profileSlice = createSlice({
       reducer: (state) => {
         state.loading = true;
       },
-      prepare: (data: Record<string, any>, resume: File | null) => {
+      prepare: (formData: Record<string, any>, resume: File | null) => {
         return {
-          payload: { data }, // ✅ Only serializable data goes in payload
-          meta: { resume },  // ✅ File goes in meta
-        };
+          payload: formData,   // 🔥 Put formData directly in payload
+          meta: { resume },    // 🔥 Keep resume in meta
+        };     
       },
     },
 
@@ -53,46 +54,30 @@ const profileSlice = createSlice({
       state.error = action.payload;
     },
 
-    // ✅ Fix updateProfileRequest similarly
-    // updateProfileRequest: {
-    //   reducer: (state) => {
-    //     state.loading = true;
-    //   },
-    //   prepare: (data: Record<string, any>, resume: File | null) => {
-    //     return {
-    //       payload: { data },
-    //       meta: { resume },
-    //     };
-    //   },
-    // },
-
-    // updateProfileSuccess: (state, action: PayloadAction<Record<string, any>>) => {
-    //   state.loading = false;
-    //   state.data = { ...state.data, ...action.payload };
-    //   state.error = null;
-    // },
-
-    // updateProfileFailure: (state, action: PayloadAction<string>) => {
-    //   state.loading = false;
-    //   state.error = action.payload;
-    // },
-    updateProfileRequest: (
-        state,
-        action: PayloadAction<{ data: Record<string, any>; resume: File | null }>
-      ) => {
-        state.loading = true;
-      },
-      updateProfileSuccess: (state, action: PayloadAction<Record<string, any>>) => {
-        state.loading = false;
-        state.data = { ...state.data, ...action.payload };
-        state.error = null;
-      },
-      updateProfileFailure: (state, action: PayloadAction<string>) => {
-        state.loading = false;
-        state.error = action.payload;
-      },
+// In your profileSlice
+  updateProfileRequest: {
+    reducer: (state) => {
+      state.loading = true;
     },
-});   
+    prepare: (formData: Record<string, any>, resume: File | null) => {
+      return {
+        payload: formData,   // Put formData directly in payload
+        meta: { resume },     // Store the resume in the meta field
+      };
+    },
+  },
+
+    updateProfileSuccess: (state, action: PayloadAction<Record<string, any>>) => {
+      state.loading = false;
+      state.data = { ...state.data, ...action.payload };
+      state.error = null;
+    },
+    updateProfileFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+  },
+});
 
 export const {
   fetchProfileRequest,

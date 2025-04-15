@@ -2,6 +2,7 @@ import { useState } from "react";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";
 import Api from "./Api";
+
 interface IRegister {
   name: string;
   email: string;
@@ -17,25 +18,23 @@ function Register() {
     role: "CANDIDATE",
   });
 
-  const [errors, setErrors] = useState<{name?:string; email?: string; password?: string }>({});
-  const [loading, setLoading] = useState<boolean>(false);
-  const [apiError, setApiError] = useState<string>("");
-  const [successMessage, setSuccessMessage] = useState<string>("");
-
+  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Regex patterns
   const nameRegex = /^[A-Za-z\s]+$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[_@#$]).{7,}$/;
 
   const validateForm = () => {
     let isValid = true;
-    let newErrors: { name?: string; email?: string; password?: string } = {};
+    const newErrors: typeof errors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = "Name is required.";
@@ -69,28 +68,24 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-  
+
     try {
       setLoading(true);
       setApiError("");
       setSuccessMessage("");
-  
+
       const response = await Api({
         url: "http://localhost:5000/api/auth/register",
         method: "post",
-        formData: formData,
+        formData,
       });
-  
+
       if ("error" in response) {
         setApiError(response.message);
       } else {
         console.log("Registration Success:", response.data);
         setSuccessMessage("Registered successfully! Redirecting to login in 3 seconds...");
-        
-        // ⏳ Delay redirect
-        setTimeout(() => {
-          navigate("/login");
-        }, 3000);
+        setTimeout(() => navigate("/login"), 3000);
       }
     } catch (error) {
       console.error("API Error:", error);
@@ -144,18 +139,16 @@ function Register() {
         </select>
         <br />
 
-        <Button type="submit" label="Register" onClick={() => {}} />
+        <Button type="submit" onClick={()=>{}} label={loading ? "Registering..." : "Register"} />
       </form>
-      
-      {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
+
       <br />
       {apiError && <p style={{ color: "red" }}>{apiError}</p>}
       {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
       <br />
+
       <Button type="button" onClick={() => navigate("/")} label="HomePage" />
       <Button type="button" onClick={() => navigate("/login")} label="Login" />
-
-
     </>
   );
 }
