@@ -53,7 +53,8 @@ const RegisterProfileForm: React.FC = () => {
     e.preventDefault();
 
     // Convert the dob to DD-MM-YYYY format before submitting to the backend
-    const formattedDob = moment(formData.dob).format("DD-MM-YYYY");
+    const formattedDob = moment.utc(formData.dob).format("YYYY-MM-DD"); // safer
+
 
     // Prepare the form data with the updated dob format
     const dataToSubmit = {

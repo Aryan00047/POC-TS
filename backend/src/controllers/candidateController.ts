@@ -9,6 +9,9 @@ import {getGridFSBucket} from "../config/gridfsConfig";
 import { GridFSBucket, ObjectId } from "mongodb";
 import Job from "../models/hr/job"
 import mongoose from "mongoose";
+import ApplicationModel from "../models/candidate/application";
+import {newApplicationEmailTemplate} from "../middleware/emailTemplate";
+import nodemailer, { SendMailOptions, SentMessageInfo } from "nodemailer";
 
 const storage = multer.memoryStorage();
 export const upload = multer({ storage });
@@ -63,13 +66,16 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
     const resume = req.body.resume ? req.body.resume.toString() : null; // ✅ Ensure it's a string or null
 
     let formattedDob: string | null = null;
-    if (dob && moment(dob, "DD-MM-YYYY", true).isValid()) {
-      formattedDob = moment(dob, "DD-MM-YYYY").toISOString();
+
+    const parsedDob = moment.utc(dob, "DD-MM-YYYY", true);
+    
+    if (parsedDob.isValid()) {
+      formattedDob = parsedDob.toISOString(); // or .toDate() if saving as Date
     } else {
       console.error(`Invalid dob format: ${dob}`);
       res.status(400).json({ message: "Invalid date format (DD-MM-YYYY)." });
       return;
-    }
+    }    
 
     const newProfile: IProfile = new Profile({
       candidate_id: req.user._id,
@@ -226,12 +232,17 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
     const { dob, marks, university, skills, resume, working, company, workExperience, designation } = req.body;
 
     // Handle date of birth (dob)
-    if (dob && moment(dob, "DD-MM-YYYY", true).isValid()) {
-      existingProfile.dob = moment(dob, "DD-MM-YYYY").toDate();
-    } else if (dob) {
-      res.status(400).json({ message: "Invalid date format (DD-MM-YYYY)." });
-      return;
+    if (dob) {
+      const parsedDob = moment.utc(dob, "DD-MM-YYYY", true);
+    
+      if (parsedDob.isValid()) {
+        existingProfile.dob = parsedDob.toDate();
+      } else {
+        res.status(400).json({ message: "Invalid date format (DD-MM-YYYY)." });
+        return;
+      }
     }
+    
 
     // Update other fields
     if (marks) existingProfile.marks = marks;
@@ -291,3 +302,162 @@ export const fetchAvailableJobs = async (req: AuthRequest, res: Response): Promi
     });
   }
 };
+
+export const applyForJob = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+      console.log("Request Params:", req.params);
+      const { jobId } = req.params;
+      const candidateId = req.user._id;
+
+      // Validate jobId
+      const numericJobId = parseInt(jobId, 10);
+      if (isNaN(numericJobId)) {
+          res.status(400).json({ error: "Invalid jobId format. Must be a number." });
+          return;
+      }
+
+      // Fetch job details
+      const job = await Job.findOne({ jobId: numericJobId });
+      if (!job) {
+          res.status(404).json({ error: "Job not found" });
+          return
+      }
+
+      // Fetch HR's email
+      const hr = await User.findById(job.hrId);
+      if (!hr || hr.role !== "HR") {
+          res.status(404).json({ error: "HR associated with this job not found." });
+          return
+      }
+
+      // Fetch candidate profile
+      const profile = await Profile.findOne({ candidate_id: candidateId });
+      if (!profile) {
+           res.status(404).json({
+              error: "Profile not found. Please update your profile before applying."
+          });
+          return;
+      }
+
+      // Check for duplicate application
+      const existingApplication = await ApplicationModel.findOne({ candidateId, jobId: job._id });
+      if (existingApplication) {
+          res.status(400).json({ error: "You have already applied for this job." });
+          return;
+      }
+
+      // Create and save new application
+      const newApplication = new ApplicationModel({
+          jobId: job._id,
+          numericJobId: job.jobId,
+          candidateId,
+          name: profile.name,
+          email: profile.email,
+          skills: profile.skills,
+          resume: profile.resume, // Keep reference to GridFS ID
+          workExperience: profile.workExperience
+      });
+
+      await newApplication.save();
+
+      const resumeId = profile.resume;
+      if (!resumeId) {
+          res.status(400).json({ error: "Resume file not found in GridFS." });
+          return;
+      }
+
+      // Convert resumeId to ObjectId if needed
+      const fileId = new ObjectId(resumeId);
+
+      // Setup GridFS Bucket
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+          bucketName: "resumes"
+      });
+
+      // Create email template
+      const emailTemplate = newApplicationEmailTemplate(hr, job, profile);
+
+      // Fetch resume as stream from GridFS
+      const resumeStream = bucket.openDownloadStream(fileId);
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      // Send email with resume as attachment
+      const mailOptions: SendMailOptions = {
+          from: process.env.EMAIL_USER,
+          to: hr.email,
+          subject: `New Application for Job ID: ${job.jobId}`,
+          html: emailTemplate,
+          attachments: [
+              {
+                  filename: "resume.pdf",
+                  content: resumeStream, // Stream resume directly from GridFS
+                  contentType: "application/pdf"
+              }
+          ]
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (err, info) => {
+          if (err) {
+              console.error("Error sending email:", err);
+              return res.status(500).json({ error: "Failed to send email to HR." });
+          }
+          console.log("Email sent to HR:", info.response);
+          res.status(201).json({
+              message: "Application submitted successfully, and HR notified.",
+              application: newApplication
+          });
+      });
+
+  } catch (error) {
+      console.error("Error applying for job:", error.message);
+      res.status(500).json({ error: "Server error", details: error.message });
+  }
+};
+
+export const viewCandidateApplications = async (req: AuthRequest, res: Response): Promise<void> => {
+  const candidateId = req.user._id; // Candidate ID from the JWT token
+
+  try {
+    // Verify if the user is a candidate
+    if (req.user.role !== "CANDIDATE") {
+      console.log("You must be candidate to access this...")
+      res.status(403).json({
+        message: "Access denied. Only candidates can view their applications.",
+      });
+      return;
+    }
+
+    // Fetch all applications submitted by the candidate and populate job details
+    const applications = await ApplicationModel.find({ candidateId })
+      .populate({
+        path: "jobId", // Populate the job details
+        select: "designation company jobDescription experienceRequired salary", // Select relevant job fields
+        match: { _id: { $exists: true } }, // Ensure the jobId is valid
+      })
+      .populate("candidateId", "name email"); // Optional: Populate candidate details (name, email)
+
+    if (!applications || applications.length === 0) {
+      console.log("No applications found...")
+      res.status(404).json({ message: "No applications found." });
+      return;
+    }
+
+    console.log("Applications fetched sucessfully...")
+    res.status(200).json({
+      message: "Applications fetched successfully",
+      applications,
+    });
+  } catch (error) {
+    console.error("Error fetching candidate applications:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+

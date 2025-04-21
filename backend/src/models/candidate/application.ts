@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model, model } from "mongoose";
 
-interface IApplication {
+export interface IApplication {
   applicationId: number;
   candidateId: mongoose.Types.ObjectId;
   jobId: mongoose.Types.ObjectId;

@@ -54,9 +54,10 @@ const UpdateProfile: React.FC = () => {
         const profile = data.profile;
         setExistingProfile(profile);
         setFormData({
-          dob: profile.dob
-          ? moment(profile.dob, "DD-MM-YYYY").format("YYYY-MM-DD") // format for date input
-          : "", // If dob is empty, leave it as an empty string
+          // When setting form data for input field
+        dob: profile.dob
+        ? moment.utc(profile.dob).format("YYYY-MM-DD")  // for input[type="date"]
+        : "",
           marks: profile.marks || "",
           university: profile.university || "",
           skills: profile.skills || "",

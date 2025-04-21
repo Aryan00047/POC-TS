@@ -14,16 +14,19 @@ const ViewProfile: React.FC = () => {
 
   const profileData = data.profile;
 
-  const formattedDOB = profileData.dob
-  ? moment(profileData.dob).format("DD-MM-YYYY")
-  : "N/A";
+  const formattedDOB =
+  profileData.dob && moment(profileData.dob, "DD-MM-YYYY", true).isValid()
+    ? profileData.dob
+    : "N/A";
+
+    console.log("profileData.dob:", profileData.dob);
 
   return (
     <div>
       <h2>Profile Details</h2>
       <p>Name: {profileData.name || "N/A"}</p>
       <p>Email: {profileData.email || "N/A"}</p>
-      <p>DOB: {formattedDOB || "N/A"}</p>
+      <p>DOB: {formattedDOB}</p>
       <p>University: {profileData.university || "N/A"}</p>
       <p>Skills: {Array.isArray(profileData.skills) ? profileData.skills.join(", ") : "N/A"}</p> 
       <p>Marks: { profileData.marks || "N/A"}</p>

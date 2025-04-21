@@ -1,6 +1,6 @@
 import express from "express";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
-import { register, getProfile, uploadResume, upload, updateProfile, getResumeByEmail, fetchAvailableJobs } from "../controllers/candidateController";
+import { register, getProfile, uploadResume, upload, updateProfile, getResumeByEmail, fetchAvailableJobs, applyForJob, viewCandidateApplications } from "../controllers/candidateController";
 
 const router = express.Router();
 
@@ -45,4 +45,19 @@ router.get(
   roleMiddleware(['CANDIDATE']),
   fetchAvailableJobs
 )
+
+router.post(
+  "/apply/jobs/:jobId",
+  authMiddleware,
+  roleMiddleware(['CANDIDATE']),
+  applyForJob
+)
+
+router.get(
+  "/profile/applications",
+  authMiddleware,
+  roleMiddleware(['CANDIDATE']),
+  viewCandidateApplications
+)
+
 export default router;
