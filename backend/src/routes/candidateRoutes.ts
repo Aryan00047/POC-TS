@@ -1,40 +1,6 @@
-// import express, { Request, Response } from "express";
-// import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
-// import User, { IUser } from "../models/User";
-// import { register, getProfile, uploadResume, upload, updateProfile } from "../controllers/candidateController";
-
-// const router = express.Router();
-
-// // Candidate Dashboard Route
-// router.post(
-//     "/candidateDashboard",
-//     authMiddleware,
-//     upload.single("resume"), // This handles file upload
-//     uploadResume, // This uploads file to GridFS and returns fileId
-//     roleMiddleware(["CANDIDATE"]),
-//     register // Saves profile with resume fileId
-//   );
-
-// router.get(
-//     "/candidateDashboard", // Changed from "/dashboard" to "/" if the base route is "/api/dashboard/candidate"
-//     authMiddleware,
-//     roleMiddleware(["CANDIDATE"]), // Removed the extra comma
-//     getProfile);
-// export default router;
-
-// router.put(
-//     "/candidateDashboard",
-//     authMiddleware,
-//     upload.single("resume"), // This handles file upload
-//     uploadResume, // This uploads file to GridFS and returns fileId
-//     roleMiddleware(["CANDIDATE"]),
-//     updateProfile // Saves profile with resume fileId
-//   );
-  
-
 import express from "express";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
-import { register, getProfile, uploadResume, upload, updateProfile, getResumeByEmail } from "../controllers/candidateController";
+import { register, getProfile, uploadResume, upload, updateProfile, getResumeByEmail, fetchAvailableJobs } from "../controllers/candidateController";
 
 const router = express.Router();
 
@@ -42,10 +8,10 @@ const router = express.Router();
 router.post(
   "/profile/register",
   authMiddleware,
-  roleMiddleware(["CANDIDATE"]), // ✅ Role check BEFORE file upload
-  upload.single("resume"), // ✅ Handles file upload
-  uploadResume, // ✅ Uploads to GridFS & sets fileId
-  register // ✅ Saves profile with resume fileId
+  roleMiddleware(["CANDIDATE"]),
+  upload.single("resume"), // Handles file upload
+  uploadResume, // Uploads to GridFS & sets fileId
+  register 
 );
 
 // ✅ Get Profile Route (GET)
@@ -73,4 +39,10 @@ router.get(
     getResumeByEmail
   );
   
+router.get(
+  "/profile/jobs",
+  authMiddleware,
+  roleMiddleware(['CANDIDATE']),
+  fetchAvailableJobs
+)
 export default router;

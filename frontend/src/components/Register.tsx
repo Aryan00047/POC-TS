@@ -77,7 +77,7 @@ function Register() {
       const response = await Api({
         url: "http://localhost:5000/api/auth/register",
         method: "post",
-        formData,
+        body:formData,
       });
 
       if ("error" in response) {

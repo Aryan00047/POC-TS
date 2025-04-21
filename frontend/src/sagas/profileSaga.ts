@@ -20,7 +20,7 @@ interface ApiResponse {
   message?: string;
 }
 
-// ✅ Fetch Profile Saga
+// Fetch Profile Saga
 function* fetchProfileSaga(): Generator<any, void, ApiResponse> {
     try {
       const token = localStorage.getItem("token");
@@ -30,7 +30,7 @@ function* fetchProfileSaga(): Generator<any, void, ApiResponse> {
       }
   
       const response: ApiResponse = yield call(Api, { 
-        url: "http://localhost:5000/api/candidate/profile", // ✅ Fixed URL
+        url: "http://localhost:5000/api/candidate/profile",
         method: "get", 
         token 
       });
@@ -44,33 +44,6 @@ function* fetchProfileSaga(): Generator<any, void, ApiResponse> {
       yield put(fetchProfileFailure("Failed to fetch profile"));
     }
   }
-  
-// ✅ Update Profile Saga
-// function* updateProfileSaga(action: ReturnType<typeof updateProfileRequest>): Generator<any, void, ApiResponse> {
-//     try {
-//       const token = localStorage.getItem("token");
-//       if (!token) {
-//         yield put(updateProfileFailure("No token found."));
-//         return;
-//       }
-  
-//       const response: ApiResponse = yield call(Api, { 
-//         url: "http://localhost:5000/api/candidate/profile/update", // ✅ Fixed URL
-//         method: "put",
-//         token,
-//         formData: action.payload 
-//       });
-  
-//       if (!response.error) {
-//         yield put(updateProfileSuccess(response.data));
-//       } else {
-//         yield put(updateProfileFailure(response.message || "Error updating profile"));
-//       }
-//     } catch (error) {
-//       yield put(updateProfileFailure("Failed to update profile"));
-//     }
-//   }
-
 
 function* updateProfileSaga(
   action: PayloadAction<Record<string, any>, string, { resume: File | null }>
@@ -106,7 +79,7 @@ function* updateProfileSaga(
       url: "http://localhost:5000/api/candidate/profile/update",
       method: "put",
       token,
-      formData,
+      body: formData,
     });
 
     if (!response.error) {
@@ -152,7 +125,7 @@ function* updateProfileSaga(
         url: "http://localhost:5000/api/candidate/profile/register",
         method: "post",
         token,
-        formData,
+        body: formData,
         headers: {
           "Content-Type": "multipart/form-data", // Tell Axios to treat it as form data
         },
@@ -171,7 +144,7 @@ function* updateProfileSaga(
     }
   }
 
-// ✅ Watcher Saga
+// Watcher Saga
 export function* watchProfileSaga(): Generator {
   yield takeLatest(fetchProfileRequest.type, fetchProfileSaga);
   yield takeLatest(updateProfileRequest.type, updateProfileSaga);

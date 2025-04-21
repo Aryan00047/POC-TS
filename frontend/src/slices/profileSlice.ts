@@ -30,15 +30,15 @@ const profileSlice = createSlice({
       state.error = action.payload;
     },
 
-    // ✅ Use prepareAction to handle FormData
+    // Use prepareAction to handle FormData
     registerProfileRequest: {
       reducer: (state) => {
         state.loading = true;
       },
       prepare: (formData: Record<string, any>, resume: File | null) => {
         return {
-          payload: formData,   // 🔥 Put formData directly in payload
-          meta: { resume },    // 🔥 Keep resume in meta
+          payload: formData,   // Put formData directly in payload
+          meta: { resume },    // Keep resume in meta
         };     
       },
     },

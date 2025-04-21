@@ -7,6 +7,7 @@ import moment from "moment";
 import multer from "multer";
 import {getGridFSBucket} from "../config/gridfsConfig";
 import { GridFSBucket, ObjectId } from "mongodb";
+import Job from "../models/hr/job"
 import mongoose from "mongoose";
 
 const storage = multer.memoryStorage();
@@ -101,11 +102,7 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
 };
 
 
-export const uploadResume = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const uploadResume = async (req: Request,res: Response,next: NextFunction): Promise<void> => {
   if (!req.file) {
     return next(); // ✅ No file? Proceed to the next middleware
   }
@@ -266,5 +263,31 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
   } catch (error) {
     console.error("Error in updateProfile Controller:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Fetch all available jobs for candidates
+export const fetchAvailableJobs = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    // Find all jobs that are currently available (you may want to add filters for availability)
+    const jobs = await Job.find().sort({ jobId: 1 }); // Sorting by jobId to show them in order
+
+    if (!jobs.length) {
+      console.log("No jobs Available currently")
+       res.status(404).json({ message: "No jobs available at the moment." });
+       return;
+    }
+
+    console.log("Jobs fetched sucessfully...")
+    res.status(200).json({
+      message: "Available jobs fetched successfully",
+      jobs,
+    });
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({
+      message: "Error fetching available jobs",
+      error: error.message,
+    });
   }
 };

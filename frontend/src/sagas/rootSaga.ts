@@ -1,6 +1,12 @@
 import { all } from "redux-saga/effects";
 import { watchProfileSaga } from "./profileSaga";
+import {wachHrSaga} from "./hrSaga";
+import { watchJobSaga } from "./jobSaga";
 
 export default function* rootSaga() {
-  yield all([watchProfileSaga()]);
+  yield all([
+    watchProfileSaga(),
+    wachHrSaga(),
+    watchJobSaga()
+  ]);
 }

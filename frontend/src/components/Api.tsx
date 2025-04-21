@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig, AxiosResponse } from "axios";
 
 interface ApiProps {
   url?: string;
-  formData?: Record<string, any> | FormData;
+  body?: Record<string, any> | FormData;
   method?: "get" | "post" | "put" | "delete" | "patch";
   token?: string;
   responseType?: "json" | "blob" | "text" | "arraybuffer";
@@ -11,14 +11,14 @@ interface ApiProps {
 
 async function Api({
   url = "/",
-  formData = {},
+  body = {},
   method = "get",
   token = "",
   responseType = "json",
   headers = {},
 }: ApiProps): Promise<AxiosResponse | { error: boolean; message: string; status?: number }> {
   try {
-    const isFormData = typeof FormData !== "undefined" && formData instanceof FormData;
+    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
     const config: AxiosRequestConfig = {
       method,
@@ -32,7 +32,7 @@ async function Api({
     };
 
     if (method !== "get") {
-      config.data = formData;
+      config.data = isFormData ? body : JSON.stringify(body);
     }
 
     const response: AxiosResponse = await axios(config);
