@@ -1,6 +1,7 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import ApplicationsPage from "./components/candidateComponents/ApplicationsPage";
 
 const HomePage = lazy(()=> import("./components/HomePage"))
 const Register = lazy(() => import("./components/Register"));
@@ -16,6 +17,8 @@ const HRDashboard = lazy(() => import("./components/hrComponents/HRDashboard"));
 const AddJob = lazy(() => import("./components/hrComponents/AddJob"));
 const ViewJobs = lazy(() => import("./components/hrComponents/ViewJobs"));
 const ViewJobsCandidate = lazy(() => import("./components/candidateComponents/ViewJobs"));
+const ViewApplications = lazy(()=> import("./components/candidateComponents/ApplicationsPage"));
+
 function App() {
   return (
     <Router>
@@ -29,6 +32,7 @@ function App() {
             <Route path="updateProfile" element={<UpdateProfile/>}/>
             <Route path="registerProfile" element={<RegisterProfile/>}/>
             <Route path="viewJobs" element={<ViewJobsCandidate/>}/>
+            <Route path="ViewApplications" element={<ApplicationsPage/>}/>
           </Route>
           <Route path="/hrDashboard" element= {<HRDashboard/>}>
             <Route path="add-job" element={<AddJob/>}/>

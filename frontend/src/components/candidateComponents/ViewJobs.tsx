@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { getJobRequest } from "../../slices/jobsSlice";
+import { applyForJob } from "../../slices/applicationSlice";
 
 const JobsPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const JobsPage: React.FC = () => {
         <div>
           {data?.map((job) => (
             <div key={job.jobId} className="job-card">
+              <h4>Job Id: {job.jobId}</h4>
               <h3>{job.designation}</h3>
               <p>{job.company}</p>
               <p>{job.jobDescription}</p>
@@ -35,11 +37,9 @@ const JobsPage: React.FC = () => {
               <button
                 onClick={() => {
                   console.log("Applying for job ID:", job.jobId);
-                //   dispatch(candidateActions.candidateApplyForJobs({ jobId: job.jobId }));
+                  dispatch(applyForJob({ numericJobId: job.jobId }));
                 }}
-                // disabled={applying}
               >
-                {/* {applying ? "Applying..." : "Apply"} */}
                 Apply
               </button>
             </div>

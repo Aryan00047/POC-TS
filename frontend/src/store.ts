@@ -4,6 +4,7 @@ import profileReducer from "./slices/profileSlice"; // Your slice file
 import hrReducer from "./slices/hrSlice";
 import jobReducer from "./slices/jobsSlice";
 import rootSaga from "./sagas/rootSaga"; // Your sagas
+import applicationReducer from "./slices/applicationSlice";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -11,7 +12,8 @@ const store = configureStore({
   reducer: {
     profile: profileReducer,
     hr: hrReducer,
-    job: jobReducer
+    job: jobReducer,
+    application: applicationReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -29,6 +29,7 @@ const CandidateDashboard: React.FC = () => {
       <button onClick={() => navigate("viewProfile")}>View Profile</button>
       <button onClick={() => navigate("updateProfile")}>Update Profile</button>
       <button onClick={() => navigate("viewJobs")}>View Jobs</button>
+      <button onClick={() => navigate("viewApplications")}>View Applications</button>
       <button onClick={() => navigate("/logout")}>Logout</button>
       <Outlet />
     </div>
